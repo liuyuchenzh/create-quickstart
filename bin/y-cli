@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+'use strict'
+const {yCli} = require('../index')
+yCli()
