@@ -35,6 +35,10 @@ function getMeaningFromAns (ans) {
  * core function
  */
 function yCli () {
+  if (isValidNode()) {
+    console.log('please update your node to the latest first')
+    return
+  }
   inquirer
     .prompt([
       {
