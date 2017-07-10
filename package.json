@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "personal project cli with rollup",
   "main": "index.js",
+  "bin": {
+    "y-cli": "bin/y-cli"
+  },
   "scripts": {
     "y-cli": "node ./bin/y-cli"
   },
