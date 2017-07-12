@@ -1,4 +1,5 @@
 const rollup = require('rollup')
+const chokidar = require('chokidar')
 /*{{less}}*/
 const less = require('less')
 /*end {{less}}*/
@@ -8,6 +9,11 @@ const LESS = /*{{less}}*/'less' || /*end {{less}}*/ false
 
 const SCRIPT_NAME = TS || 'js'
 const STYLE_NAME = LESS || 'css'
+const WATCH_OPTION = {
+  ignored: /(^|[\/\\])\../,
+  persistent: true
+}
+const DELAY_IN_MS = 500
 const pjName = require('../package.json').name
 
 const fs = require('fs')
@@ -43,9 +49,8 @@ function writeFiles (files, content) {
  * @return {Function}
  */
 function bundle (entry, distLists) {
-  return function (eventType) {
+  return function () {
     /*{{ts}}*/
-    console.log(`[${pjName}]: ${eventType} event happened with script files`)
     exec('tsc', () => {
       console.log(`[${pjName}]: ts -> js done`)
       /*end {{ts}}*/
@@ -55,31 +60,32 @@ function bundle (entry, distLists) {
         entry: resolve(entry),
         legacy: true
       }).then(function (bundle) {
-        let result = bundle.generate({
+        bundle.generate({
           format: 'umd',
           moduleName: 'app',
           amd: {
             id: 'app'
           },
           exports: 'default'
+        }).then(res => {
+          const namedCode = res.code
+          // full js
+          writeFiles(
+            distLists
+              .map(dist => resolve(dist))
+              .filter(dist => !/\.min\.js$/.test(dist)),
+            namedCode
+          )
+          // closure-compile
+          const code = closureCompile(namedCode)
+          // min js
+          writeFiles(
+            distLists
+              .map(dist => resolve(dist))
+              .filter(dist => /\.min\.js$/.test(dist)),
+            code)
+          console.log(`[${pjName}]: bundle done`)
         })
-        const namedCode = result.code
-        // full js
-        writeFiles(
-          distLists
-            .map(dist => resolve(dist))
-            .filter(dist => !/\.min\.js$/.test(dist)),
-          namedCode
-        )
-        // closure-compile
-        const code = closureCompile(namedCode)
-        // min js
-        writeFiles(
-          distLists
-            .map(dist => resolve(dist))
-            .filter(dist => /\.min\.js$/.test(dist)),
-          code)
-        console.log(`[${pjName}]: bundle done`)
       }).catch((e) => {
         console.log(e)
       })
@@ -132,80 +138,28 @@ function lessc (entry, dist) {
 }
 
 /**
- * is it specific type of file
- * @param {string} type
- * @return {function}
- */
-function isType (type) {
-  return function checkType (file) {
-    return fs.statSync(file).isFile() && path.extname(file) === '.' + type
-  }
-}
-
-/**
- * is it file
- * @param {string} file
- * @return {boolean}
- */
-function isFile (file) {
-  return fs.statSync(file).isFile()
-}
-
-/**
- * is it dir
- * @param {string} file
- * @return {boolean}
- */
-function isDir (file) {
-  return fs.statSync(file).isDirectory()
-}
-
-/**
- * gather files in an array
- * @param {string} src:  where to look
- * @param {string} type: type of file
- * @return {string[]}: result
- */
-function gatherFile (src, type) {
-  const files = fs.readdirSync(src, {
-    encoding: 'utf-8'
-  })
-  return files.reduce((last, file) => {
-    const _file = resolve(src, file)
-    if (isFile(_file)) {
-      isType(type)(_file) && last.push(_file)
-    } else if (isDir(_file)) {
-      last = last.concat(gatherFile(_file, type))
-    }
-    return last
-  }, [])
-}
-
-/**
  * watch file
  * @param {string[]} files: file list
  * @param {function} cb: callback
  */
 function watch (files, cb) {
-  files.forEach(file => {
-    fs.watch(file, cb)
-  })
+  const watcher = chokidar.watch(files, WATCH_OPTION)
+  watcher
+    .on('add', cb)
+    .on('change', cb)
 }
 
 const _bundle = debounce(bundle('src/js/index.js', [
   'dist/js/index.js',
   'dist/js/index.min.js'
-]), 500)
+]), DELAY_IN_MS)
 const _lessc = debounce(() => lessc('src/css/index.' + STYLE_NAME, [
   'dist/css/index.css'
-]), 500)
-
-const scriptFiles = gatherFile('src/js', SCRIPT_NAME)
-const styleFiles = gatherFile('src/css', STYLE_NAME)
+]), DELAY_IN_MS)
 
 console.log(`[${pjName}]: start to watch file...`)
-watch(scriptFiles, _bundle)
-watch(styleFiles, _lessc)
+watch(resolve('src/js'), _bundle)
+watch(resolve('src/css'), _lessc)
 // compile for the first time
 _bundle('init')
 _lessc()
