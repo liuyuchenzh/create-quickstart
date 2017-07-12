@@ -14,6 +14,9 @@ const WATCH_OPTION = {
   persistent: true
 }
 const DELAY_IN_MS = 500
+// mark for compiling
+let isScriptCompiling = false
+let isStyleCompiling = false
 const pjName = require('../package.json').name
 
 const fs = require('fs')
@@ -50,6 +53,10 @@ function writeFiles (files, content) {
  */
 function bundle (entry, distLists) {
   return function () {
+    if (isScriptCompiling) {
+      return
+    }
+    isScriptCompiling = true
     /*{{ts}}*/
     exec('tsc', () => {
       console.log(`[${pjName}]: ts -> js done`)
@@ -85,6 +92,7 @@ function bundle (entry, distLists) {
               .filter(dist => /\.min\.js$/.test(dist)),
             code)
           console.log(`[${pjName}]: bundle done`)
+          isScriptCompiling = false
         })
       }).catch((e) => {
         console.log(e)
@@ -112,6 +120,10 @@ function closureCompile (src) {
  * compile less
  */
 function lessc (entry, dist) {
+  if (isStyleCompiling) {
+    return
+  }
+  isStyleCompiling = true
   /*{{less}}*/
   console.log(`[${pjName}]: start to compile less...`)
   let lessRaw = fs.readFileSync(resolve(entry), {
@@ -127,6 +139,7 @@ function lessc (entry, dist) {
   }).then(output => {
     writeFiles(dist, output.css)
     console.log(`[${pjName}]: less compile done`)
+    isStyleCompiling = false
   }, err => {
     console.log(err)
   })
@@ -134,6 +147,7 @@ function lessc (entry, dist) {
   if (STYLE_NAME === 'css') {
     const cssContent = fs.readFileSync(resolve(entry))
     writeFiles(dist, cssContent)
+    isStyleCompiling = false
   }
 }
 
