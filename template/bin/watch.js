@@ -1,5 +1,7 @@
 const rollup = require('rollup')
 const chokidar = require('chokidar')
+const bs = require('browser-sync').create()
+
 /*{{less}}*/
 const less = require('less')
 /*end {{less}}*/
@@ -30,6 +32,11 @@ function resolve (...src) {
   return path.resolve(root, ...src)
 }
 
+// start server
+bs.init({
+  server: root
+})
+
 /**
  * write file/files
  * @param {string|string[]} files: file or files
@@ -46,14 +53,15 @@ function writeFiles (files, content) {
 }
 
 /**
- *
+ * bundle script
  * @param {string} entry: entry point
  * @param {string|string[]} distLists: the destination
- * @return {Function}
+ * @return {Promise}
  */
 function bundle (entry, distLists) {
-  return function () {
+  return new Promise((_resolve, _reject) => {
     if (isScriptCompiling) {
+      _reject(false)
       return
     }
     isScriptCompiling = true
@@ -93,16 +101,24 @@ function bundle (entry, distLists) {
             code)
           console.log(`[${pjName}]: bundle done`)
           isScriptCompiling = false
+          _resolve(true)
         })
       }).catch((e) => {
         console.log(e)
+        _reject(false)
       })
       /*{{ts}}*/
     })
     /*end {{ts}}*/
-  }
+  })
+  
 }
 
+/**
+ * run google-closure-compiler-js
+ * @param {string} src
+ * @return {string}
+ */
 function closureCompile (src) {
   console.log(`[${pjName}]: start to closure compile...`)
   const flags = {
@@ -118,37 +134,45 @@ function closureCompile (src) {
 
 /**
  * compile less
+ * @param {string} entry
+ * @param {string|string[]} dist
+ * @return {Promise}
  */
 function lessc (entry, dist) {
-  if (isStyleCompiling) {
-    return
-  }
-  isStyleCompiling = true
-  /*{{less}}*/
-  console.log(`[${pjName}]: start to compile less...`)
-  let lessRaw = fs.readFileSync(resolve(entry), {
-    encoding: 'utf-8'
-  })
-  lessRaw = lessRaw.replace(/@import.*?['"](\w+\.\w+)['"]/g, (match, file) => {
-    return match.replace(file, resolve('src/css', file))
-  })
-  less.render(lessRaw, {
-    sourceMap: {
-      sourceMapFileInline: true
+  return new Promise((_resolve, _reject) => {
+    if (isStyleCompiling) {
+      return
     }
-  }).then(output => {
-    writeFiles(dist, output.css)
-    console.log(`[${pjName}]: less compile done`)
-    isStyleCompiling = false
-  }, err => {
-    console.log(err)
+    isStyleCompiling = true
+    /*{{less}}*/
+    console.log(`[${pjName}]: start to compile less...`)
+    let lessRaw = fs.readFileSync(resolve(entry), {
+      encoding: 'utf-8'
+    })
+    lessRaw = lessRaw.replace(/@import.*?['"](\w+\.\w+)['"]/g, (match, file) => {
+      return match.replace(file, resolve('src/css', file))
+    })
+    less.render(lessRaw, {
+      sourceMap: {
+        sourceMapFileInline: true
+      }
+    }).then(output => {
+      writeFiles(dist, output.css)
+      console.log(`[${pjName}]: less compile done`)
+      isStyleCompiling = false
+      _resolve(true)
+    }, err => {
+      console.log(err)
+      _reject(false)
+    })
+    /*end {{less}}*/
+    if (STYLE_NAME === 'css') {
+      const cssContent = fs.readFileSync(resolve(entry))
+      writeFiles(dist, cssContent)
+      isStyleCompiling = false
+      _resolve(true)
+    }
   })
-  /*end {{less}}*/
-  if (STYLE_NAME === 'css') {
-    const cssContent = fs.readFileSync(resolve(entry))
-    writeFiles(dist, cssContent)
-    isStyleCompiling = false
-  }
 }
 
 /**
@@ -163,17 +187,38 @@ function watch (files, cb) {
     .on('change', cb)
 }
 
-const _bundle = debounce(bundle('src/js/index.js', [
-  'dist/js/index.js',
-  'dist/js/index.min.js'
-]), DELAY_IN_MS)
-const _lessc = debounce(() => lessc('src/css/index.' + STYLE_NAME, [
-  'dist/css/index.css'
-]), DELAY_IN_MS)
+// reload html
+const _reload = debounce(() => {
+  bs.reload(resolve('*.html'))
+}, DELAY_IN_MS * 3)
+
+// delay compile
+const _bundle = debounce(() => {
+  bundle('src/js/index.js', [
+    'dist/js/index.js',
+    'dist/js/index.min.js'
+  ])
+    .then(() => {
+      _reload()
+    })
+    // do nothing
+    .catch(() => {})
+  
+}, DELAY_IN_MS)
+const _lessc = debounce(() => {
+  lessc('src/css/index.' + STYLE_NAME, [
+    'dist/css/index.css'
+  ])
+    .then(() => {
+      _reload()
+    })
+    // do nothing
+    .catch(() => {})
+}, DELAY_IN_MS)
 
 console.log(`[${pjName}]: start to watch file...`)
-watch(resolve('src/js'), _bundle)
-watch(resolve('src/css'), _lessc)
+watch(resolve('src/js/**/*.' + SCRIPT_NAME), _bundle)
+watch(resolve('src/css/**/*.' + STYLE_NAME), _lessc)
 // compile for the first time
 _bundle('init')
 _lessc()
