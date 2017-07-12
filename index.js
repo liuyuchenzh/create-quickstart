@@ -1,5 +1,3 @@
-// query
-// generate template based on input
 const fs = require('fs')
 const fse = require('fs-extra')
 const path = require('path')
@@ -16,6 +14,7 @@ const NPM_HOST = 'https://www.npmjs.com/'
 const PJ_NAME = require('./package.json').name
 const TPL_PATH = path.resolve(root, 'template')
 const TPL_PKG_PATH = path.resolve(root, './template/package.json')
+const G_PKG_LIST = ['rollup', 'typescript']
 const pkg = require(TPL_PKG_PATH)
 const ANS_MAP = {
   'y': true,
@@ -24,6 +23,9 @@ const ANS_MAP = {
 const TYPE_MAP = {
   'ts': 'js',
   'less': 'css'
+}
+const PKG_NAME_MAP = {
+  'typescript': 'ts'
 }
 const FILTER_OUT_DIR = ['.idea', '.vscode', '.gitignore', 'node_modules']
 
@@ -64,13 +66,15 @@ function yCli () {
       const preferredAns = convertAns(ans)
       // where to init the project
       const dist = path.resolve(ans[DIST])
+      // get global package list
+      const gList = updateGList(G_PKG_LIST, preferredAns)
       // generate new package content
       Object.entries(ans)
         .forEach(entry => {
           _pkg = updatePkgGivenUsage(entry[0], getMeaningFromAns(entry[1]), _pkg)
         })
       console.log(`[${PJ_NAME}]: rewrite package.json done`)
-      init(dist, TPL_PATH, _pkg)
+      init(dist, TPL_PATH, _pkg, gList)
         .then(() => {
           const _dist = process.cwd()
           // rename file if necessary
@@ -175,7 +179,7 @@ function tryConnectNPM () {
  */
 function isWithinWall () {
   return Promise.race([tryConnectNPM(), timeout(500)])
-    .then((s) => {
+    .then(() => {
       return false
     })
     .catch(() => {
@@ -210,26 +214,6 @@ function copyTemplate (tplSrc, dist) {
   return fse.copy(tplSrc, dist)
 }
 
-/**
- * install package
- * @param {boolean} withInWall
- */
-function install (withInWall) {
-  return new Promise((resolve, reject) => {
-    const command = withInWall ? 'npm install --registry=https://registry.npm.taobao.org' : 'npm install'
-    console.log(`[${PJ_NAME}]: start to install package, please be patient`)
-    exec(command, (err, stdout, stderr) => {
-      if (err) {
-        console.log(`[${PJ_NAME}]: something went wrong when installing packages`)
-        console.error(err)
-      }
-      console.log(`[${PJ_NAME}]: result of package installation: ${stdout}`)
-      console.log(`[${PJ_NAME}]: notice of package installation: ${stderr}`)
-      resolve('success')
-    })
-  })
-  
-}
 /**
  * rename file
  * @param {string} oldPath
@@ -308,7 +292,15 @@ function isFilterOutDir (input) {
   return FILTER_OUT_DIR.includes(input)
 }
 
-async function init (dist, tplSrc, pkgContent) {
+/**
+ * init
+ * @param {string} dist: where to create the project
+ * @param {string} tplSrc: where to find template
+ * @param {string} pkgContent: package.json for project
+ * @param {string[]}gList: global package list
+ * @return {Promise}
+ */
+async function init (dist, tplSrc, pkgContent, gList) {
   // copy template
   await copyTemplate(tplSrc, dist)
   // cd to the dist dir
@@ -322,8 +314,62 @@ async function init (dist, tplSrc, pkgContent) {
   return isWithinWall()
     .then((isIn) => {
       console.log(`[${PJ_NAME}]: ${isIn ? 'in the wall' : 'out of the wall'}`)
-      return install(isIn)
+      // install locally and globally
+      return Promise.all([
+        install(isIn, {
+          type: 'local'
+        }),
+        install(isIn, {
+          type: 'global',
+          list: gList
+        })
+      ])
     })
+}
+
+/**
+ * update global package list
+ * @param {string[]} oldList
+ * @param {object} preferredAns
+ */
+function updateGList (oldList, preferredAns) {
+  return oldList
+    .filter(pkgName => {
+      switch (pkgName) {
+        case 'rollup':
+          return true
+        default:
+          const questionName = PKG_NAME_MAP[pkgName]
+          return preferredAns[questionName]
+      }
+    })
+}
+
+/**
+ * install package
+ * @param {boolean} withInWall
+ * @param {object} option
+ * @return {Promise}
+ */
+function install (withInWall, option) {
+  const type = option.type
+  const list = option.list
+  return new Promise((resolve, reject) => {
+    let command = withInWall ? 'npm install --registry=https://registry.npm.taobao.org' : 'npm install'
+    // generate command based on type
+    command = type === 'global' ? command + ' -g ' + list.join(' ') : command
+    console.log(`[${PJ_NAME}]: start to install ${type} package, please be patient`)
+    exec(command, (err, stdout, stderr) => {
+      if (err) {
+        console.log(`[${PJ_NAME}]: something went wrong when installing ${type} packages`)
+        console.error(err)
+        reject(`error occurred during ${type} package installation`)
+      }
+      console.log(`[${PJ_NAME}]: result of ${type} package installation: ${stdout}`)
+      console.log(`[${PJ_NAME}]: notice of ${type} package installation: ${stderr}`)
+      resolve('success')
+    })
+  })
 }
 
 module.exports = {
