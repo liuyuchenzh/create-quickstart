@@ -6,6 +6,13 @@
   "bin": {
     "y-cli": "bin/y-cli"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liuyuchenzh/y-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/liuyuchenzh/y-cli/issues"
+  },
   "scripts": {
     "y-cli": "node ./bin/y-cli"
   },
