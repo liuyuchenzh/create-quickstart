@@ -1,6 +1,10 @@
 const rollup = require('rollup')
+/*{{ts}}*/
+const typescript = require('rollup-plugin-typescript2')
+/*end {{ts}}*/
 const chokidar = require('chokidar')
 const bs = require('browser-sync').create()
+const closure = require('google-closure-compiler-js').compile
 
 /*{{less}}*/
 const less = require('less')
@@ -19,13 +23,13 @@ const DELAY_IN_MS = 500
 // mark for compiling
 let isScriptCompiling = false
 let isStyleCompiling = false
+// project name
 const pjName = require('../package.json').name
 
 const fs = require('fs')
 const path = require('path')
-const exec = require('child_process').exec
+// const exec = require('child_process').exec
 const debounce = require('lodash').debounce
-const closure = require('google-closure-compiler-js').compile
 const root = path.resolve(__dirname, '..')
 
 function resolve (...src) {
@@ -65,51 +69,49 @@ function bundle (entry, distLists) {
       return
     }
     isScriptCompiling = true
-    /*{{ts}}*/
-    exec('tsc', () => {
-      console.log(`[${pjName}]: ts -> js done`)
-      /*end {{ts}}*/
-      console.log(`[${pjName}]: start to bundle...`)
-      // start to rollup
-      rollup.rollup({
-        entry: resolve(entry),
-        legacy: true
-      }).then(function (bundle) {
-        bundle.generate({
-          format: 'umd',
-          moduleName: 'app',
-          amd: {
-            id: 'app'
-          },
-          exports: 'default'
-        }).then(res => {
-          const namedCode = res.code
-          // full js
-          writeFiles(
-            distLists
-              .map(dist => resolve(dist))
-              .filter(dist => !/\.min\.js$/.test(dist)),
-            namedCode
-          )
-          // closure-compile
-          const code = closureCompile(namedCode)
-          // min js
-          writeFiles(
-            distLists
-              .map(dist => resolve(dist))
-              .filter(dist => /\.min\.js$/.test(dist)),
-            code)
-          console.log(`[${pjName}]: bundle done`)
-          isScriptCompiling = false
-          _resolve(true)
-        })
-      }).catch((e) => {
-        console.log(e)
-        _reject(false)
-      })
+    console.log(`[${pjName}]: start to bundle...`)
+    // start to rollup
+    rollup.rollup({
+      entry: resolve(entry),
       /*{{ts}}*/
+      plugins: [
+        typescript()
+      ],
+      /*end {{ts}}*/
+      legacy: true
+    }).then(function (bundle) {
+      bundle.generate({
+        format: 'umd',
+        moduleName: 'app',
+        amd: {
+          id: 'app'
+        },
+        exports: 'default'
+      }).then(res => {
+        const namedCode = res.code
+        // full js
+        writeFiles(
+          distLists
+            .map(dist => resolve(dist))
+            .filter(dist => !/\.min\.js$/.test(dist)),
+          namedCode
+        )
+        // closure-compile
+        const code = closureCompile(namedCode)
+        // min js
+        writeFiles(
+          distLists
+            .map(dist => resolve(dist))
+            .filter(dist => /\.min\.js$/.test(dist)),
+          code)
+        console.log(`[${pjName}]: bundle done`)
+        isScriptCompiling = false
+        _resolve(true)
+      })
+    }).catch((e) => {
+      console.log(e)
+      _reject(false)
     })
-    /*end {{ts}}*/
   })
   
 }
@@ -194,7 +196,7 @@ const _reload = debounce(() => {
 
 // delay compile
 const _bundle = debounce(() => {
-  bundle('src/js/index.js', [
+  bundle('src/js/index.' + SCRIPT_NAME, [
     'dist/js/index.js',
     'dist/js/index.min.js'
   ])

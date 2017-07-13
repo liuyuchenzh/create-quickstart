@@ -9,12 +9,22 @@
     "keywords": [
         "y-cli"
     ],
+    "globalDependencies": [
+        "typescript"
+    ],
+    "tsDependencies": [
+        "typescript",
+        "rollup-plugin-typescript2"
+    ],
+    "lessDependencies": [
+        "less"
+    ],
     "author": "Yuchen Liu",
     "license": "MIT",
     "devDependencies": {
         "less": "^2.7.2",
-        "typescript": "^2.4.1",
-        "rollup": "^0.45.1",
+        "rollup": "^0.45.2",
+        "rollup-plugin-typescript2": "^0.4.6",
         "lodash": "^4.17.4",
         "google-closure-compiler-js": "^20170626.0.0",
         "chokidar": "^1.7.0",
