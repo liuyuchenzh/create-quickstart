@@ -14,8 +14,10 @@ const NPM_HOST = 'https://www.npmjs.com/'
 const PJ_NAME = require('./package.json').name
 const TPL_PATH = path.resolve(root, 'template')
 const TPL_PKG_PATH = path.resolve(root, './template/package.json')
-const G_PKG_LIST = ['rollup', 'typescript']
 const pkg = require(TPL_PKG_PATH)
+const G_PKG_LIST = pkg.globalDependencies
+const TS_DEP = pkg.tsDependencies
+const LESS_DEP = pkg.lessDependencies
 const ANS_MAP = {
   'y': true,
   'n': false
@@ -61,7 +63,6 @@ function yCli () {
       }
     ])
     .then(ans => {
-      let _pkg = pkg
       // string -> boolean
       const preferredAns = convertAns(ans)
       // where to init the project
@@ -69,11 +70,13 @@ function yCli () {
       // get global package list
       const gList = updateGList(G_PKG_LIST, preferredAns)
       // generate new package content
-      Object.entries(ans)
-        .forEach(entry => {
-          _pkg = updatePkgGivenUsage(entry[0], getMeaningFromAns(entry[1]), _pkg)
-        })
+      const _pkg = Object.entries(ans)
+        .reduce((last, entry) => {
+          last = updatePkgGivenUsage(entry[0], getMeaningFromAns(entry[1]), last)
+          return last
+        }, pkg)
       console.log(`[${PJ_NAME}]: rewrite package.json done`)
+      // start the core function
       init(dist, TPL_PATH, _pkg, gList)
         .then(() => {
           const _dist = process.cwd()
@@ -119,10 +122,10 @@ function convertAns (ans) {
 function updatePkgGivenUsage (usageName, toUse, _package = pkg) {
   switch (usageName) {
     case TS:
-      !toUse && deleteUsageInPkg('typescript', _package)
+      !toUse && TS_DEP.forEach(dep => deleteUsageInPkg(dep, _package))
       return _package
     case LESS:
-      !toUse && deleteUsageInPkg('less', _package)
+      !toUse && LESS_DEP.forEach(dep => deleteUsageInPkg(dep, _package))
       return _package
     default:
       return _package
@@ -223,6 +226,12 @@ function rename (oldPath, newPath) {
   fs.renameSync(oldPath, newPath)
 }
 
+/**
+ * rename the ext name based on the answer
+ * @param {string} usageName: ts | less
+ * @param {boolean} toUse
+ * @param {string} src: where files lies in
+ */
 function updateFile (usageName, toUse, src) {
   if (!toUse || !TYPE_MAP[usageName]) {
     return
