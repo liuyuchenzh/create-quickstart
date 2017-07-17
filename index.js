@@ -1,7 +1,7 @@
 const fs = require('fs')
 const fse = require('fs-extra')
 const path = require('path')
-const exec = require('child_process').exec
+const {exec, spawnSync: spawn} = require('child_process')
 const https = require('https')
 const inquirer = require('inquirer')
 const semver = require('semver')
@@ -86,7 +86,7 @@ function yCli () {
               updateFile(entry[0], getMeaningFromAns(entry[1]), path.resolve(_dist, 'src'))
             })
           console.log(`[${PJ_NAME}]: rewrite file ext name done`)
-          // rewrite watch.js if given the answer
+          // rewrite watch.js given the answer
           rewriteWatchFile(path.resolve(_dist, 'bin/watch.js'), preferredAns)
           console.log(`[${PJ_NAME}]: rewrite watch.js done`)
           // remove tsconfig.json
@@ -95,6 +95,9 @@ function yCli () {
             console.log(`[${PJ_NAME}]: remove tsconfig.json done`)
           }
           console.log(`[${PJ_NAME}]: init success`)
+        })
+        .catch(err => {
+          console.error(err)
         })
     })
 }
@@ -364,20 +367,22 @@ function install (withInWall, option) {
   const type = option.type
   const list = option.list
   return new Promise((resolve, reject) => {
-    let command = withInWall ? 'npm install --registry=https://registry.npm.taobao.org' : 'npm install'
-    // generate command based on type
-    command = type === 'global' ? command + ' -g ' + list.join(' ') : command
+    // early quit if no global package needed
+    if (type === 'global' && !list.length) {
+      resolve(true)
+      return
+    }
     console.log(`[${PJ_NAME}]: start to install ${type} package, please be patient`)
-    exec(command, (err, stdout, stderr) => {
-      if (err) {
-        console.log(`[${PJ_NAME}]: something went wrong when installing ${type} packages`)
-        console.error(err)
-        reject(`error occurred during ${type} package installation`)
-      }
-      console.log(`[${PJ_NAME}]: result of ${type} package installation: ${stdout}`)
-      console.log(`[${PJ_NAME}]: notice of ${type} package installation: ${stderr}`)
-      resolve('success')
+    
+    const sym = process.platform
+    const command = /win/.test(sym) ? 'npm.cmd' : 'npm'
+    let argList = withInWall ? ['install', '--registry=https://registry.npm.taobao.org'] : ['install']
+    // generate argList based on install type
+    argList = type === 'global' ? argList.concat('-g', list) : argList
+    const child = spawn(command, argList, {
+      stdio: 'inherit'
     })
+    resolve(true)
   })
 }
 

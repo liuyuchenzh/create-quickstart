@@ -5,7 +5,7 @@ function template (content, data) {
       return data[key] ? match : ''
     })
     // remove useless comment
-    .replace(/\/\*(end\s*)?{{(\w+)}}\*\//g, '')
+    .replace(/\/\*(end\s*)?{{(\w+)}}\*\/\s{,1}/g, '')
 }
 
 module.exports = {
