@@ -1,6 +1,6 @@
 {
   "name": "y-cli",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "personal project cli with rollup",
   "main": "index.js",
   "bin": {
