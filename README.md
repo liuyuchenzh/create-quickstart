@@ -24,9 +24,7 @@ Based on your answer, a `my-app` (or any name you choose) directory will be crea
 cd my-app
 npm run watch
 ```
-Open the `index.html` in browser
-
-Notice: for the time being, no hot reload feature is included, which means you have to manually refresh the page
+Now `y-cli` support hot reload : )
 
 ## License
 
