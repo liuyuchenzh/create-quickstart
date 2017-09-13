@@ -1,11 +1,11 @@
 function template (content, data) {
-  const reg = /\/\*{{(\w+)}}\*\/[\s\S]*?\/\*end\s*{{\1}}\*\//g
+  const reg = /\/\*\s*{{(\w+)}}\s*\*\/[\s\S]*?\/\*\s*end\s*{{\1}}\s*\*\//g
   return content
     .replace(reg, (match, key) => {
       return data[key] ? match : ''
     })
     // remove useless comment
-    .replace(/\/\*(end\s*)?{{(\w+)}}\*\/\s{,1}/g, '')
+    .replace(/\/\*\s*(end\s*)?{{(\w+)}}\s*\*\/\s{,1}/g, '')
 }
 
 module.exports = {

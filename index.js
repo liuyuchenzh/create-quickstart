@@ -1,14 +1,16 @@
 const fs = require('fs')
 const fse = require('fs-extra')
 const path = require('path')
-const {exec, spawnSync: spawn} = require('child_process')
+const {spawnSync: spawn} = require('child_process')
 const https = require('https')
 const inquirer = require('inquirer')
 const semver = require('semver')
 const {template} = require('./script/template')
 const root = __dirname
 const TS = 'ts'
+const POSTCSS = 'postcss'
 const LESS = 'less'
+const CSS = 'css'
 const DIST = 'dist'
 const NPM_HOST = 'https://www.npmjs.com/'
 const PJ_NAME = require('./package.json').name
@@ -17,23 +19,18 @@ const TPL_PKG_PATH = path.resolve(root, './template/package.json')
 const pkg = require(TPL_PKG_PATH)
 const G_PKG_LIST = pkg.globalDependencies
 const TS_DEP = pkg.tsDependencies
-const LESS_DEP = pkg.lessDependencies
-const ANS_MAP = {
-  'y': true,
-  'n': false
-}
+const CSS_PRE_LIST = ['less', 'postcss']
+
+// .js => .ts; .css => .less
+// if using postcss, then no renaming needed
 const TYPE_MAP = {
-  'ts': 'js',
-  'less': 'css'
+  ts: 'js',
+  less: 'css'
 }
 const PKG_NAME_MAP = {
-  'typescript': 'ts'
+  typescript: 'ts'
 }
 const FILTER_OUT_DIR = ['.idea', '.vscode', '.gitignore', 'node_modules']
-
-function getMeaningFromAns (ans) {
-  return ANS_MAP[ans]
-}
 
 /**
  * core function
@@ -49,13 +46,22 @@ function yCli () {
         type: 'input',
         name: TS,
         message: 'Use typescript?(y/n)',
-        default: 'y'
-      }, {
-        type: 'input',
-        name: LESS,
-        message: 'Use less?(y/n)',
-        default: 'y'
-      }, {
+        default: 'y',
+        filter (ans) {
+          return convertYesOrNo(ans)
+        }
+      },
+      {
+        type: 'list',
+        name: CSS,
+        message: 'Choose a css pre-processor',
+        choices: ['less', 'postcss'],
+        default: 'less',
+        filter (ans) {
+          return convertList(ans, CSS_PRE_LIST)
+        }
+      },
+      {
         type: 'input',
         name: DIST,
         message: 'type the name of project directory: ',
@@ -70,29 +76,31 @@ function yCli () {
       // get global package list
       const gList = updateGList(G_PKG_LIST, preferredAns)
       // generate new package content
-      const _pkg = Object.entries(ans)
-        .reduce((last, entry) => {
-          last = updatePkgGivenUsage(entry[0], getMeaningFromAns(entry[1]), last)
-          return last
-        }, pkg)
+      const _pkg = Object.entries(preferredAns).reduce((last, entry) => {
+        last = updatePkgGivenUsage(entry[0], entry[1], last)
+        return last
+      }, pkg)
       console.log(`[${PJ_NAME}]: rewrite package.json done`)
       // start the core function
       init(dist, TPL_PATH, _pkg, gList)
         .then(() => {
           const _dist = process.cwd()
           // rename file if necessary
-          Object.entries(ans)
-            .forEach(entry => {
-              updateFile(entry[0], getMeaningFromAns(entry[1]), path.resolve(_dist, 'src'))
-            })
+          Object.entries(preferredAns).forEach(entry => {
+            updateFile(entry[0], entry[1], path.resolve(_dist, 'src'))
+          })
           console.log(`[${PJ_NAME}]: rewrite file ext name done`)
           // rewrite watch.js given the answer
           rewriteWatchFile(path.resolve(_dist, 'bin/watch.js'), preferredAns)
           console.log(`[${PJ_NAME}]: rewrite watch.js done`)
           // remove tsconfig.json
           if (!preferredAns.ts) {
-            removeTsConfig(_dist)
+            removeFile(_dist, 'tsconfig.json')
             console.log(`[${PJ_NAME}]: remove tsconfig.json done`)
+          }
+          if (!preferredAns.postcss) {
+            removeFile(_dist, 'postcss.config.js')
+            console.log(`[${PJ_NAME}]: remove postcss.config.js done`)
           }
           console.log(`[${PJ_NAME}]: init success`)
         })
@@ -103,6 +111,33 @@ function yCli () {
 }
 
 /**
+ * convert y/n to true/false
+ * @param {string} ans
+ */
+function convertYesOrNo (ans) {
+  switch (ans) {
+    case 'y':
+      return true
+    case 'no':
+      return false
+    default:
+      return false
+  }
+}
+
+/**
+ * convert list form of answer into array
+ * ex. css: 'postcss' => css: [['postcss': true], ['less': false]]
+ * @param {string} ans
+ * @param {string[]} defaultList
+ */
+function convertList (ans, defaultList) {
+  return defaultList.map(item => {
+    return [item, item === ans]
+  })
+}
+
+/**
  * convert answer into preferred format
  * @param {object} ans
  * @return {object}
@@ -110,7 +145,15 @@ function yCli () {
 function convertAns (ans) {
   let ret = {}
   for (let key in ans) {
-    ret[key] = getMeaningFromAns(ans[key])
+    const val = ans[key]
+    // if is array, then need extra care
+    if (Array.isArray(val)) {
+      val.forEach(depPair => {
+        ret[depPair[0]] = depPair[1]
+      })
+    } else {
+      ret[key] = val
+    }
   }
   return ret
 }
@@ -127,12 +170,23 @@ function updatePkgGivenUsage (usageName, toUse, _package = pkg) {
     case TS:
       !toUse && TS_DEP.forEach(dep => deleteUsageInPkg(dep, _package))
       return _package
+    case POSTCSS:
     case LESS:
-      !toUse && LESS_DEP.forEach(dep => deleteUsageInPkg(dep, _package))
+      !toUse && deleteCssHelper(usageName, _package)
       return _package
     default:
       return _package
   }
+}
+
+/**
+ * help to remove redundant css field in package.json
+ * @param {string} type
+ * @param {object} _package
+ */
+function deleteCssHelper (type, _package) {
+  const list = pkg[`${type}Dependencies`]
+  list.forEach(dep => deleteUsageInPkg(dep, _package))
 }
 
 /**
@@ -165,17 +219,19 @@ function timeout (timeInMs) {
  */
 function tryConnectNPM () {
   return new Promise((resolve, reject) => {
-    https.get(NPM_HOST, (res) => {
-      const {statusCode} = res
-      if (statusCode !== 200) {
-        reject('fail')
-      }
-      res.on('end', () => {
-        resolve('success')
+    https
+      .get(NPM_HOST, res => {
+        const {statusCode} = res
+        if (statusCode !== 200) {
+          reject('fail')
+        }
+        res.on('end', () => {
+          resolve('success')
+        })
       })
-    }).on('error', () => {
-      reject('fail')
-    })
+      .on('error', () => {
+        reject('fail')
+      })
   })
 }
 
@@ -231,7 +287,9 @@ function rename (oldPath, newPath) {
 
 /**
  * rename the ext name based on the answer
- * @param {string} usageName: ts | less
+ * if using postcss then no need to convert css files
+ * therefore postcss is not in TYPE_MAP
+ * @param {string} usageName: ts | less | postcss
  * @param {boolean} toUse
  * @param {string} src: where files lies in
  */
@@ -268,6 +326,10 @@ function removeTsConfig (filePath) {
   fs.unlinkSync(path.resolve(filePath, 'tsconfig.json'))
 }
 
+function removeFile (filePath, fileName) {
+  fs.unlinkSync(path.resolve(filePath, fileName))
+}
+
 /**
  * gather specific file type within directory provided
  * 1. provide range to search: src
@@ -277,18 +339,18 @@ function removeTsConfig (filePath) {
  */
 function gatherFileIn (src) {
   return function gatherFileType (type) {
-    return fs.readdirSync(src)
-      .reduce((last, file) => {
-        const filePath = path.resolve(src, file)
-        if (isFile(filePath)) {
-          path.extname(file) === `.${type}` && last.push(path.normalize(filePath))
-        } else if (isFilterOutDir(file)) {
-          // do nothing
-        } else if (isDir(filePath)) {
-          last = last.concat(gatherFileIn(filePath)(type))
-        }
-        return last
-      }, [])
+    return fs.readdirSync(src).reduce((last, file) => {
+      const filePath = path.resolve(src, file)
+      if (isFile(filePath)) {
+        path.extname(file) === `.${type}` &&
+        last.push(path.normalize(filePath))
+      } else if (isFilterOutDir(file)) {
+        // do nothing
+      } else if (isDir(filePath)) {
+        last = last.concat(gatherFileIn(filePath)(type))
+      }
+      return last
+    }, [])
   }
 }
 
@@ -322,21 +384,20 @@ async function init (dist, tplSrc, pkgContent, gList) {
   console.log(`[${PJ_NAME}]: cd to ${abDist}`)
   // adjust package.json
   adjustPkg(path.resolve(abDist, 'package.json'), JSON.stringify(pkgContent))
-  
-  return isWithinWall()
-    .then((isIn) => {
-      console.log(`[${PJ_NAME}]: ${isIn ? 'in the wall' : 'out of the wall'}`)
-      // install locally and globally
-      return Promise.all([
-        install(isIn, {
-          type: 'local'
-        }),
-        install(isIn, {
-          type: 'global',
-          list: gList
-        })
-      ])
-    })
+
+  return isWithinWall().then(isIn => {
+    console.log(`[${PJ_NAME}]: ${isIn ? 'in the wall' : 'out of the wall'}`)
+    // install locally and globally
+    return Promise.all([
+      install(isIn, {
+        type: 'local'
+      }),
+      install(isIn, {
+        type: 'global',
+        list: gList
+      })
+    ])
+  })
 }
 
 /**
@@ -345,16 +406,15 @@ async function init (dist, tplSrc, pkgContent, gList) {
  * @param {object} preferredAns
  */
 function updateGList (oldList, preferredAns) {
-  return oldList
-    .filter(pkgName => {
-      switch (pkgName) {
-        case 'rollup':
-          return true
-        default:
-          const questionName = PKG_NAME_MAP[pkgName]
-          return preferredAns[questionName]
-      }
-    })
+  return oldList.filter(pkgName => {
+    switch (pkgName) {
+      case 'rollup':
+        return true
+      default:
+        const questionName = PKG_NAME_MAP[pkgName]
+        return preferredAns[questionName]
+    }
+  })
 }
 
 /**
@@ -372,11 +432,15 @@ function install (withInWall, option) {
       resolve(true)
       return
     }
-    console.log(`[${PJ_NAME}]: start to install ${type} package, please be patient`)
-    
+    console.log(
+      `[${PJ_NAME}]: start to install ${type} package, please be patient`
+    )
+
     const sym = process.platform
-    const command = /win/.test(sym) ? 'npm.cmd' : 'npm'
-    let argList = withInWall ? ['install', '--registry=https://registry.npm.taobao.org'] : ['install']
+    const command = /^win/.test(sym) ? 'npm.cmd' : 'npm'
+    let argList = withInWall
+      ? ['install', '--registry=https://registry.npm.taobao.org']
+      : ['install']
     // generate argList based on install type
     argList = type === 'global' ? argList.concat('-g', list) : argList
     const child = spawn(command, argList, {
