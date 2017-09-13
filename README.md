@@ -1,6 +1,6 @@
 ## Intro
 Cli for personal project<br>
-Use `rollup` + `google-closure-compiler-js` [+ `typescript`] [+ `less`] <br>
+Use `rollup` + `google-closure-compiler-js` [+ `typescript`] [+ `less`] [+ `postcss`] <br>
 Still under development
 
 ## installation
@@ -15,7 +15,7 @@ y-cli
 ```
 Then answer 3 questions<br>
 *1* Use typescript(y/n)<br>
-*2* Use less(y/n)<br>
+*2* Choose a css pre-processor: less or postcss<br>
 *3* type the name of project directory: (my-app)<br>
 
 Based on your answer, a `my-app` (or any name you choose) directory will be created with new project located in
