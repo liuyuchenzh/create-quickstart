@@ -1,0 +1,7 @@
+{
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "rules": {
+    "no-var-requires": false,
+    "no-console": [false, "log", "error"]
+  }
+}

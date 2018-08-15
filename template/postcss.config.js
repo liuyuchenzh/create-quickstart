@@ -1,3 +1,6 @@
 module.exports = {
-  plugins: [require('postcss-cssnext')]
+  plugins: {
+    'postcss-import': {},
+    'postcss-preset-env': {}
+  }
 }
