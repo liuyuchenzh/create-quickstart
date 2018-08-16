@@ -2,13 +2,13 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const { dist } = require("../build/path");
-const { use: cssLoader, test } = require("../cssloader/loader.json");
+const { use: cssLoader, test } = require("./loader/cssloader.json");
 const {
   use: jsLoader,
   test: scriptTest,
   exclude,
   ext
-} = require("../jsloader/loader.json");
+} = require("./loader/jsloader.json");
 const cssTest = new RegExp(test);
 const jsTest = new RegExp(scriptTest);
 const excludeReg = new RegExp(exclude);

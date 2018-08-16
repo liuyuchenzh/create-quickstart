@@ -5,6 +5,7 @@ const fse = require("fs-extra");
 const merge = require("lodash/merge");
 const rimraf = require("rimraf");
 const execute = require("./utils/execute");
+const install = require("./utils/install");
 const { write, read } = require("./utils/io");
 let packageJson = require("./template/package.json");
 
@@ -51,6 +52,10 @@ const questions = [
     type: "list",
     choices: [
       {
+        name: "Vanilla JavaScript",
+        value: "vanilla"
+      },
+      {
         name: "React",
         value: "react"
       },
@@ -65,10 +70,6 @@ const questions = [
       {
         name: "Preact",
         value: "preact"
-      },
-      {
-        name: "Vanilla JavaScript",
-        value: "vanilla"
       }
     ]
   },
@@ -109,8 +110,7 @@ const questions = [
     message: "Use npm or yarn?",
     choices: ["npm", "yarn"],
     type: "list",
-    default: "npm",
-    when: usingVanilla
+    default: "npm"
   },
   {
     name: "registry",
@@ -130,8 +130,10 @@ inquirer.prompt(questions).then(answer => {
     // use official cli
     const cli = OFFICIAL_CLI[framework];
     const command = OFFICIAL_CLI_COMMAND[framework];
+    console.log(`installing ${cli}...`);
+    install(installer, cli, "-g");
     console.log(`using ${cli} to init the project`);
-    execute(`npx ${command}`);
+    execute("npx", command.split(" ").concat(directory));
     return;
   }
   // copy template so it will be left untouched
@@ -144,9 +146,7 @@ inquirer.prompt(questions).then(answer => {
     "index.html",
     "src/",
     "package.json",
-    "README.md",
-    "cssloader/loader.json",
-    "jsloader/loader.json"
+    "README.md"
   ];
   // merge package.json
   // update package.json
@@ -163,11 +163,11 @@ inquirer.prompt(questions).then(answer => {
     packageJson = merge(packageJson, tsPackage);
     scriptCopyLocation = resolve("template/tsconfig/copy/");
     // update jsloader.json
-    const loader = require("./template/jsloader/loader.json");
+    const loader = require("./template/webpack/loader/jsloader.json");
     loader.test = "\\.tsx?$";
     loader.use = "ts-loader";
     loader.ext = "ts";
-    const jsloaderLocation = resolve("temp/jsloader/loader.json");
+    const jsloaderLocation = resolve("temp/webpack/loader/jsloader.json");
     write(jsloaderLocation, JSON.stringify(loader, null, 2));
   } else {
     const jsPackage = require("./template/jsconfig/package.json");
@@ -184,14 +184,14 @@ inquirer.prompt(questions).then(answer => {
   if (css !== "postcss") {
     // update extension
     const cssLocation = resolve("temp/src/index.css");
-    const cssLoaderLocation = resolve("temp/cssloader/loader.json");
+    const cssLoaderLocation = resolve("temp/webpack/loader/cssloader.json");
     renameExt("css", styleExt)(cssLocation);
     // update reference in index.js
     const indexJs = read(indexJsLocation);
     const newJsContent = indexJs.replace(/(index)\.css/, `$1.${styleExt}`);
     write(indexJsLocation, newJsContent);
     // update loader info
-    const cssLoader = require("./template/cssloader/loader.json");
+    const cssLoader = require("./template/webpack/loader/cssloader.json");
     cssLoader.use = `${css}-loader`;
     cssLoader.test = `\\.${styleExt}$`;
     write(cssLoaderLocation, formatJSON(cssLoader));
@@ -201,7 +201,7 @@ inquirer.prompt(questions).then(answer => {
   // merge css package.json
   packageJson = merge(
     packageJson,
-    require(`./template/cssloader/package.${css}.json`)
+    require(`./template/cssconfig/package.${css}.json`)
   );
   // update package.json
   write(resolve("temp/package.json"), formatJSON(packageJson));
