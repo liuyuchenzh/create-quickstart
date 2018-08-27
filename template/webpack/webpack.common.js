@@ -21,6 +21,18 @@ module.exports = {
     path: dist,
     filename: "[name].[hash:7].js"
   },
+  resolve: {
+    extensions: [
+      ".ts",
+      ".wasm",
+      ".mjs",
+      ".js",
+      ".json",
+      ".less",
+      ".css",
+      ".scss"
+    ]
+  },
   module: {
     rules: [
       {
