@@ -15,7 +15,7 @@
     "webpack-serve": "^2.0.2",
     "webpack-merge": "^4.1.4",
     "prettier": "^1.14.2",
-    "@babel/polyfill": "^7.0.0-rc-3",
+    "@babel/polyfill": "^7.0.0-rc.3",
     "http-proxy-middleware": "^0.18.0",
     "koa-connect": "^2.0.1"
   },
