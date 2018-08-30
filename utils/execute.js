@@ -1,10 +1,13 @@
 const { spawnSync } = require("child_process");
 const options = {
-  stdio: "inherit"
+  stdio: "inherit",
+  shell: true
 };
 
 function execute(command, methodAndFlag = [], args = []) {
-  spawnSync(command, [...methodAndFlag, ...args], options);
+  const customArgs = [...methodAndFlag, ...args];
+  const passIn = customArgs.length ? [customArgs, options] : [options];
+  spawnSync(command, ...passIn);
 }
 
 module.exports = execute;

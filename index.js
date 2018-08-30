@@ -233,7 +233,7 @@ inquirer.prompt(questions).then(answer => {
   });
   // cd to dist and install all dependencies
   process.chdir(dist);
-  const method = installer === "npm" ? "i" : "";
+  const method = "install";
   console.log("installing...");
   execute(installer, [method]);
   console.log("all done");
