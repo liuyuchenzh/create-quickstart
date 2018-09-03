@@ -124,7 +124,7 @@ const questions = [
 // install cli and execute
 // else cd to directory
 // copy template then install
-export default function init() {
+function init() {
   inquirer.prompt(questions).then(answer => {
     const {
       directory,
@@ -241,7 +241,7 @@ export default function init() {
     });
     // cd to dist and install all dependencies
     process.chdir(dist);
-    const method = installer === "npm" ? "i" : "";
+    const method = "install";
     console.log("installing...");
     execute(installer, [method]);
     console.log("all done");
@@ -250,3 +250,7 @@ export default function init() {
     console.log(`- npm run start`);
   });
 }
+
+module.exports = init;
+
+init();
