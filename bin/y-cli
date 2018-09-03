@@ -6,5 +6,5 @@ const pkg = require('../package.json')
 program
   .version(pkg.version)
 
-const {yCli} = require('../index')
+const yCli = require('../index')
 yCli()
