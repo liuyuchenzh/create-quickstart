@@ -15,7 +15,11 @@
   },
   "scripts": {
     "y-cli": "node ./bin/y-cli",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "preinstall": "npm uninstall -g y-cli@beta y-cli"
+  },
+  "engines": {
+    "node": ">=8.11.0"
   },
   "lint-staged": {
     "*.js": [
