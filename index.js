@@ -258,11 +258,6 @@ function init() {
       );
       // update project package.json
       merge(packageJson, cdnPackageJson);
-      // delete unwanted file
-      rimraf("./temp/webpack/plugins/package.json", e => {
-        if (!e) return;
-        console.log(e);
-      });
     }
     // update package.json
     write(resolve("temp/package.json"), formatJSON(packageJson));
@@ -292,6 +287,14 @@ function init() {
       if (!e) return;
       console.log(e);
     });
+    // don't leave package.json in /webpack/plugins
+    if (cdn) {
+      // delete unwanted file
+      rimraf(path.resolve(dist, "webpack/plugins/package.json"), e => {
+        if (!e) return;
+        console.log(e);
+      });
+    }
     // cd to dist and install all dependencies
     process.chdir(dist);
     const method = "install";
