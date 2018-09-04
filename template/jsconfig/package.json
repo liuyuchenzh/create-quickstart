@@ -1,9 +1,9 @@
 {
   "devDependencies": {
-    "eslint": "^5.4.0",
+    "eslint": "^5.5.0",
     "eslint-plugin-prettier": "^2.6.2",
     "eslint-config-prettier": "^3.0.1",
-    "babel-loader": "^8.0.0",
+    "babel-loader": "^8.0.2",
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0"
   }
