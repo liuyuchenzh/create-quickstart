@@ -234,8 +234,7 @@ function init() {
     );
     // using cdn service
     if (cdn) {
-      const cdnPackageJsonLocation = "./template/webpack/plugins/package.json";
-      const cdnPackageJson = require(cdnPackageJsonLocation);
+      const cdnPackageJson = require("./template/webpack/plugins/package.json");
       if (!cdnPackageJson.devDependencies) {
         cdnPackageJson.devDependencies = {};
       }
@@ -260,7 +259,7 @@ function init() {
       // update project package.json
       merge(packageJson, cdnPackageJson);
       // delete unwanted file
-      rimraf(cdnPackageJsonLocation, e => {
+      rimraf("./temp/webpack/plugins/package.json", e => {
         if (!e) return;
         console.log(e);
       });
