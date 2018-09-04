@@ -1,0 +1,9 @@
+{
+  "plugins": [
+    {
+      "key": "cdn",
+      "name": "",
+      "version": ""
+    }
+  ]
+}

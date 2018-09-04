@@ -39,6 +39,7 @@ const STYLE_EXT = {
 };
 
 const usingVanilla = ({ framework }) => framework === "vanilla";
+const usingCdn = ({ cdn }) => cdn;
 
 const questions = [
   {
@@ -106,6 +107,24 @@ const questions = [
     ]
   },
   {
+    name: "cdn",
+    message: "Use cdn service?",
+    type: "confirm",
+    default: false,
+    when: usingVanilla
+  },
+  {
+    name: "cdnProvider",
+    message: "Type in cdn provider(package name):",
+    validate(input) {
+      if (!input) {
+        return "Please enter the name of your cdn provider!";
+      }
+      return true;
+    },
+    when: usingCdn
+  },
+  {
     name: "installer",
     message: "Use npm or yarn?",
     choices: ["npm", "yarn"],
@@ -131,6 +150,8 @@ function init() {
       framework,
       typescript,
       css,
+      cdn,
+      cdnProvider,
       installer,
       registry
     } = answer;
@@ -211,6 +232,39 @@ function init() {
       packageJson,
       require(`./template/cssconfig/package.${css}.json`)
     );
+    // using cdn service
+    if (cdn) {
+      const cdnPackageJsonLocation = "./template/webpack/plugins/package.json";
+      const cdnPackageJson = require(cdnPackageJsonLocation);
+      if (!cdnPackageJson.devDependencies) {
+        cdnPackageJson.devDependencies = {};
+      }
+      // add cdn provider to package.json
+      cdnPackageJson.devDependencies[cdnProvider] = "latest";
+      const pluginJson = require("./template/webpack/plugins/plugins.json");
+      // update plugin json
+      pluginJson.plugins = pluginJson.plugins.map(item => {
+        if (item.key === "cdn") {
+          return Object.assign(item, {
+            name: cdnProvider,
+            version: "latest"
+          });
+        }
+        return item;
+      });
+      // write plugin json
+      write(
+        resolve("temp/webpack/plugins/plugins.json"),
+        formatJSON(pluginJson)
+      );
+      // update project package.json
+      merge(packageJson, cdnPackageJson);
+      // delete unwanted file
+      rimraf(cdnPackageJsonLocation, e => {
+        if (!e) return;
+        console.log(e);
+      });
+    }
     // update package.json
     write(resolve("temp/package.json"), formatJSON(packageJson));
 
