@@ -2,12 +2,12 @@ const merge = require("webpack-merge");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const webpack = require("webpack");
 const common = require("./webpack.common");
-const plugins = require("./plugins/cdn");
+const cdnPlugins = require("./plugins/cdn");
 
 const prod = {
-  output: Object.assign(common.output, {
+  output: {
     filename: "[name].[contenthash:7].js"
-  }),
+  },
   plugins: [
     new webpack.DefinePlugin({
       "process.env.NODE_EVN": JSON.stringify("production")
@@ -18,9 +18,9 @@ const prod = {
       filename: "[name].[hash:7].css",
       chunkFilename: "[id].[hash:7].css"
     }),
-    ...plugins
+    ...cdnPlugins
   ],
-  mode: plugins.length ? "none" : "production"
+  mode: cdnPlugins.length ? "none" : "production"
 };
 
 // @sideeffects
