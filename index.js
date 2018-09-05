@@ -282,19 +282,17 @@ function init() {
     copyList.forEach(file =>
       fse.copySync(resolve(`temp/${file}`), path.resolve(dist, file))
     );
-    // clean temp directory
-    rimraf(tempLocation, e => {
-      if (!e) return;
-      console.log(e);
-    });
-    // don't leave package.json in /webpack/plugins
-    if (cdn) {
-      // delete unwanted file
-      rimraf(path.resolve(dist, "webpack/plugins/package.json"), e => {
+    // clean temp directory and package.jon in webpack/plugins
+    const deleteLocations = [
+      tempLocation,
+      path.resolve(dist, "webpack/plugins/package.json")
+    ];
+    deleteLocations.forEach(loc => {
+      rimraf(loc, e => {
         if (!e) return;
         console.log(e);
       });
-    }
+    });
     // cd to dist and install all dependencies
     process.chdir(dist);
     const method = "install";
