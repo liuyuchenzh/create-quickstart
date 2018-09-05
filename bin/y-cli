@@ -5,6 +5,7 @@ const pkg = require('../package.json')
 
 program
   .version(pkg.version)
+  .parse(process.argv);
 
 const yCli = require('../index')
 yCli()
