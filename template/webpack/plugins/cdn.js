@@ -1,9 +1,8 @@
-const UploadPlugin = require("webpack-upload-plugin");
 const pluginJson = require("./plugins.json");
 const { name } = pluginJson.plugins.find(item => item.key === "cdn") || {};
 module.exports = name
   ? [
-      new UploadPlugin(require(name), {
+      new require("webpack-upload-plugin")(require(name), {
         enableCache: true
       })
     ]
