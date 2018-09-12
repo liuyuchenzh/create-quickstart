@@ -1,14 +1,18 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
+// output setup
 const { dist } = require("../build/path");
+// css setup
 const { use: cssLoader, test } = require("./loader/cssloader.json");
+// js setup
 const {
   use: jsLoader,
   test: scriptTest,
   exclude,
   ext
 } = require("./loader/jsloader.json");
+// init webpack test field
 const cssTest = new RegExp(test);
 const jsTest = new RegExp(scriptTest);
 const excludeReg = new RegExp(exclude);
@@ -24,13 +28,16 @@ module.exports = {
   resolve: {
     extensions: [
       ".ts",
+      ".tsx",
       ".wasm",
       ".mjs",
       ".js",
+      ".jsx",
       ".json",
       ".less",
       ".css",
-      ".scss"
+      ".scss",
+      ".styl"
     ]
   },
   module: {

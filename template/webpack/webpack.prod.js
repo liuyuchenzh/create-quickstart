@@ -24,7 +24,7 @@ const prod = {
 };
 
 // @sideeffects
-// use MiniCssExtractPlugin.loader instead of 'style-loader
+// use MiniCssExtractPlugin.loader instead of 'style-loader'
 const rule = common.module.rules.find(
   r => r.use && Array.isArray(r.use) && r.use.includes("style-loader")
 );
