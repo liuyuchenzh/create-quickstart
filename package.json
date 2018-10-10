@@ -14,11 +14,15 @@
     "url": "https://github.com/liuyuchenzh/y-cli/issues"
   },
   "scripts": {
-    "y-cli": "node ./bin/y-cli",
-    "precommit": "lint-staged"
+    "y-cli": "node ./bin/y-cli"
   },
   "engines": {
     "node": ">=8.11.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
   "lint-staged": {
     "*.js": [
@@ -32,19 +36,19 @@
   "author": "Yuchen Liu",
   "license": "MIT",
   "dependencies": {
-    "commander": "^2.17.1",
+    "commander": "^2.19.0",
     "fs-extra": "^7.0.0",
-    "husky": "^0.14.3",
+    "husky": "^1.1.1",
     "inquirer": "^6.2.0",
-    "lint-staged": "^7.2.2",
+    "lint-staged": "^7.3.0",
     "lodash": "^4.17.10",
     "rimraf": "^2.6.2"
   },
   "devDependencies": {
-    "babel-eslint": "^9.0.0",
-    "eslint": "^5.5.0",
-    "eslint-config-prettier": "^3.0.1",
-    "eslint-plugin-prettier": "^2.6.2",
-    "prettier": "^1.14.2"
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.6.1",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-plugin-prettier": "^3.0.0",
+    "prettier": "^1.14.3"
   }
 }
