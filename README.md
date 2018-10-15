@@ -1,11 +1,28 @@
 # y-cli
 
+A cli for front end project.
+
 ## Intro
 
-This is the latest development branch!
+Design for simple project.
 
-Don't use it.
+## Installation
 
+```bash
+$ npm i -g y-cli@beta
+# or
+$ yarn global add y-cli@beta
+```
+
+## Usage
+
+In your shell, run
+
+```bash
+$ y-cli
+```
+
+That's it
 
 ## License
 
