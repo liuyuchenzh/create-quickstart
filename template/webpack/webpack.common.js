@@ -1,6 +1,8 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
 // output setup
 const { dist } = require("../build/path");
 // css setup
@@ -49,7 +51,13 @@ module.exports = {
       },
       {
         test: cssTest,
-        use: ["style-loader", "css-loader", cssLoader]
+        use: [
+          process.env.NODE_ENV === "development"
+            ? "style-loader"
+            : MiniCssExtractPlugin.loader,
+          "css-loader",
+          cssLoader
+        ]
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
