@@ -3,7 +3,6 @@ const fs = require("fs");
 const inquirer = require("inquirer");
 const fse = require("fs-extra");
 const merge = require("lodash/merge");
-const rimraf = require("rimraf");
 const execute = require("./utils/execute");
 const install = require("./utils/install");
 const { write, read } = require("./utils/io");
@@ -175,7 +174,8 @@ function init() {
       "index.html",
       "src/",
       "package.json",
-      "README.md"
+      "README.md",
+      ".editorconfig"
     ];
     // merge package.json
     // update package.json
@@ -288,10 +288,11 @@ function init() {
       path.resolve(dist, "webpack/plugins/package.json")
     ];
     deleteLocations.forEach(loc => {
-      rimraf(loc, e => {
-        if (!e) return;
+      try {
+        fse.removeSync(loc);
+      } catch (e) {
         console.log(e);
-      });
+      }
     });
     // cd to dist and install all dependencies
     process.chdir(dist);
