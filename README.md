@@ -6,6 +6,23 @@ A cli for front end project.
 
 Design for simple project.
 
+## Features
+
+For JavaScript, you are able to choose from
+
+- React
+- Vue
+- Angular
+- Preact
+- Vanilla
+
+When choosing Vanilla, following css pre-processors are supported
+
+- PostCSS
+- LESS
+- Sass
+- Stylus
+
 ## Installation
 
 ```bash
