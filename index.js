@@ -175,7 +175,8 @@ function init() {
       "src/",
       "package.json",
       "README.md",
-      ".editorconfig"
+      ".editorconfig",
+      ".gitignore"
     ];
     // merge package.json
     // update package.json
