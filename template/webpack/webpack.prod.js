@@ -10,7 +10,9 @@ const prod = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      "process.env.NODE_ENV": JSON.stringify("production")
+      "process.env": {
+        NODE_ENV: JSON.stringify("production")
+      }
     }),
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
