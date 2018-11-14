@@ -176,7 +176,8 @@ function init() {
       "package.json",
       "README.md",
       ".editorconfig",
-      ".gitignore_keep"
+      ".gitignore_keep",
+      "webpack.config.js"
     ];
     // merge package.json
     // update package.json
@@ -281,7 +282,10 @@ function init() {
     const dist = path.resolve(ws, directory || "");
     // copy files to dist
     copyList.forEach(file =>
-      fse.copySync(resolve(`temp/${file}`), path.resolve(dist, /^\.gitignore/.test(file) ? '.gitignore' : file))
+      fse.copySync(
+        resolve(`temp/${file}`),
+        path.resolve(dist, /^\.gitignore/.test(file) ? ".gitignore" : file)
+      )
     );
     // clean temp directory and package.jon in webpack/plugins
     const deleteLocations = [

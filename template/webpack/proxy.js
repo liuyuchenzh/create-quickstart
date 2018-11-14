@@ -1,2 +1,2 @@
-// see https://github.com/webpack-contrib/webpack-serve/blob/master/docs/addons/proxy-history-fallback.config.js
-module.exports = [];
+// see https://webpack.js.org/configuration/dev-server/#devserver-proxy
+module.exports = {};
