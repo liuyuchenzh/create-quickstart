@@ -1,9 +1,9 @@
 {
   "devDependencies": {
-    "ts-loader": "^5.3.0",
+    "ts-loader": "^5.3.1",
     "typescript": "^3.1.6",
     "tslint": "^5.11.0",
-    "tslint-config-prettier": "^1.16.0"
+    "tslint-config-prettier": "^1.17.0"
   },
   "lint-staged": {
     "*.ts": [

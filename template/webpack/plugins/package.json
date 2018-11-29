@@ -1,5 +1,5 @@
 {
   "devDependencies": {
-    "webpack-upload-plugin": "^0.14.6"
+    "webpack-upload-plugin": "^0.16.2"
   }
 }
