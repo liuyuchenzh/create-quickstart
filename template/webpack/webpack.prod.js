@@ -3,6 +3,7 @@ const webpack = require("webpack");
 const common = require("./webpack.common");
 const cdnPlugins = require("./plugins/cdn");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const usingCdn = cdnPlugins.length > 0;
 
 const prod = {
   output: {
@@ -17,12 +18,24 @@ const prod = {
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional
-      filename: "[name].[hash:7].css",
-      chunkFilename: "[id].[hash:7].css"
+      filename: "[name].[contenthash:7].css",
+      chunkFilename: "[id].[contenthash:7].css"
     }),
     ...cdnPlugins
   ],
-  mode: cdnPlugins.length ? "none" : "production"
+  mode: usingCdn ? "none" : "production"
 };
 
-module.exports = merge(common, prod);
+const optimize = usingCdn
+  ? {
+      optimization: {
+        concatenateModules: true,
+        splitChunks: {
+          chunks: "all"
+        },
+        occurrenceOrder: true
+      }
+    }
+  : {};
+
+module.exports = merge(common, prod, optimize);
