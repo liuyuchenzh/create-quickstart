@@ -1,5 +1,9 @@
 # y-cli changelog
 
+## 1.2.5
+
+* refactor: using webpack v4 now
+
 ## 0.5.0
 
 * support postcss
