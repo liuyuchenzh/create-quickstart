@@ -26,9 +26,9 @@ When choosing Vanilla, following css pre-processors are supported
 ## Installation
 
 ```bash
-$ npm i -g y-cli@beta
+$ npm i -g y-cli
 # or
-$ yarn global add y-cli@beta
+$ yarn global add y-cli
 ```
 
 ## Usage
