@@ -106,6 +106,13 @@ const questions = [
     ]
   },
   {
+    name: "multi",
+    message: "Use multi-pages?",
+    type: "confirm",
+    default: false,
+    when: usingVanilla
+  },
+  {
     name: "cdn",
     message: "Use cdn service?",
     type: "confirm",
@@ -149,6 +156,7 @@ function init() {
       framework,
       typescript,
       css,
+      multi,
       cdn,
       cdnProvider,
       installer,
@@ -179,6 +187,8 @@ function init() {
       ".gitignore_keep",
       "webpack.config.js"
     ];
+    const jsExt = typescript ? "ts" : "js";
+    const styleExt = STYLE_EXT[css];
     // merge package.json
     // update package.json
     // copy eslint/tslint files to template root
@@ -208,7 +218,6 @@ function init() {
     fse.copySync(scriptCopyLocation, tempLocation);
     copyList.push(...fs.readdirSync(scriptCopyLocation));
 
-    const styleExt = STYLE_EXT[css];
     // update style file extension
     // style reference
     // as well as webpack loader
@@ -261,13 +270,49 @@ function init() {
       // update project package.json
       merge(packageJson, cdnPackageJson);
     }
-    // update package.json
-    write(resolve("temp/package.json"), formatJSON(packageJson));
 
     // only update .js -> .ts here since css reference may needs to be updated too
     if (typescript) {
       renameExt("js", "ts")(indexJsLocation);
     }
+
+    // multi page
+    if (multi) {
+      // script should be in root
+      // new README should be applied
+      const copyMultiFiles = [
+        {
+          from: "multipage/multipage.js",
+          to: "multipage.js"
+        },
+        {
+          from: "multipage/README.md",
+          to: "README.md"
+        }
+      ];
+      copyMultiFiles.forEach(item => {
+        fse.copyFileSync(
+          path.resolve(tempLocation, item.from),
+          path.resolve(tempLocation, item.to)
+        );
+      });
+      // move files into src/pages/index directory
+      [`index.${jsExt}`, `index.${styleExt}`, "../index.html"].forEach(file => {
+        fse.moveSync(
+          path.resolve(tempLocation, "src", file),
+          path.resolve(tempLocation, "src/pages/index", path.basename(file))
+        );
+      });
+      // copy script
+      copyList.push("multipage.js");
+      // get rid of html since it is located in src/pages/index now
+      const htmlIndex = copyList.findIndex(file => file === "index.html");
+      copyList.splice(htmlIndex, 1);
+      // update scripts
+      merge(packageJson, require("./template/multipage/package.json"));
+    }
+    // update package.json
+    write(resolve("temp/package.json"), formatJSON(packageJson));
 
     // create .npmrc
     if (registry && registry.trim()) {
@@ -307,7 +352,7 @@ function init() {
     console.log("all done");
     console.log("please enter following command:");
     console.log(`- cd ${directory}`);
-    console.log(`- npm run start`);
+    console.log(`- npm run start${multi ? ":all" : ""}`);
   });
 }
 

@@ -1,7 +1,14 @@
 const path = require("path");
+const fs = require("fs");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
+// handle multi pages
+// entry and all are mutual exclusive
+const { multi, entry = "", all } = process.env;
+const isMulti = multi === "true";
+const buildAll = isMulti && all === "true";
 
 // output setup
 const { dist } = require("../build/path");
@@ -19,10 +26,55 @@ const cssTest = new RegExp(test);
 const jsTest = new RegExp(scriptTest);
 const excludeReg = new RegExp(exclude);
 
+let entryDirs = [];
+if (buildAll) {
+  entryDirs = fs.readdirSync(path.resolve(__dirname, "../src/pages"));
+}
+
+// spa
+let webpackEntry = {
+  app: path.resolve(__dirname, `../src/index.${ext}`)
+};
+if (buildAll) {
+  webpackEntry = entryDirs.reduce((last, page) => {
+    return Object.assign(last, {
+      [page]: path.resolve(__dirname, `../src/pages/${page}/index.${ext}`)
+    });
+  }, {});
+} else if (isMulti) {
+  webpackEntry = {
+    [entry]: path.resolve(__dirname, "../src/pages", entry, `index.${ext}`)
+  };
+}
+
+// spa
+let htmlPlugins = [
+  new HtmlWebpackPlugin({
+    template: path.resolve(__dirname, "../index.html"),
+    filename: path.join(dist, "index.html")
+  })
+];
+
+if (buildAll) {
+  htmlPlugins = entryDirs.map(page => {
+    return new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, "../src/pages", page, "index.html"),
+      filename: path.join(dist, `${page}.html`),
+      chunks: [page]
+    });
+  });
+} else if (isMulti) {
+  htmlPlugins = [
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, "../src/pages", entry, "index.html"),
+      filename: path.join(dist, `${entry}.html`),
+      chunks: [entry]
+    })
+  ];
+}
+
 module.exports = {
-  entry: {
-    app: path.resolve(__dirname, `../src/index.${ext}`)
-  },
+  entry: webpackEntry,
   output: {
     path: dist,
     filename: "[name].[hash:7].js"
@@ -93,9 +145,6 @@ module.exports = {
     new CleanWebpackPlugin(["dist"], {
       root: path.resolve(__dirname, "..")
     }),
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, "../index.html"),
-      filename: path.join(dist, "index.html")
-    })
+    ...htmlPlugins
   ]
 };
