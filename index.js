@@ -185,7 +185,8 @@ function init() {
       "README.md",
       ".editorconfig",
       ".gitignore_keep",
-      "webpack.config.js"
+      "webpack.config.js",
+      ".prettierrc"
     ];
     const jsExt = typescript ? "ts" : "js";
     const styleExt = STYLE_EXT[css];
@@ -239,7 +240,7 @@ function init() {
       copyList.push("postcss.config.js");
     }
     // merge css package.json
-    packageJson = merge(
+    merge(
       packageJson,
       require(`./template/cssconfig/package.${css}.json`)
     );
