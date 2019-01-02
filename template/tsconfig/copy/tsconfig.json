@@ -8,7 +8,8 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "experimentalDecorators": true,
-    "allowJs": true
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"]
+  "include": ["src"]
 }
