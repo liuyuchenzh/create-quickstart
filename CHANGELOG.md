@@ -1,5 +1,14 @@
 # y-cli changelog
 
+## 1.3.1
+
+- Fix
+  - Drop `types` directory when using typescript;
+  - Enable `allowSyntheticDefaultImports` by default when using typescript;
+  - Add `.prettierrc` to root;
+  - Turn off `trailing-comma` of tslint;
+  - Add file path of `.prettierrc` to `tslint.json`.
+
 ## 1.3.0
 
 - Features
