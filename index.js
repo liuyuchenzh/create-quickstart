@@ -240,10 +240,7 @@ function init() {
       copyList.push("postcss.config.js");
     }
     // merge css package.json
-    merge(
-      packageJson,
-      require(`./template/cssconfig/package.${css}.json`)
-    );
+    merge(packageJson, require(`./template/cssconfig/package.${css}.json`));
     // using cdn service
     if (cdn) {
       const cdnPackageJson = require("./template/webpack/plugins/package.json");

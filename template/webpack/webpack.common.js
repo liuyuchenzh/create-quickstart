@@ -5,7 +5,7 @@ const CleanWebpackPlugin = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 // handle multi pages
-// entry and all are mutual exclusive
+// entry and all are mutually exclusive
 const { multi, entry = "", all } = process.env;
 const isMulti = multi === "true";
 const buildAll = isMulti && all === "true";
