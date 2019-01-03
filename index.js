@@ -278,22 +278,8 @@ function init() {
     if (multi) {
       // script should be in root
       // new README should be applied
-      const copyMultiFiles = [
-        {
-          from: "multipage/multipage.js",
-          to: "multipage.js"
-        },
-        {
-          from: "multipage/README.md",
-          to: "README.md"
-        }
-      ];
-      copyMultiFiles.forEach(item => {
-        fse.copyFileSync(
-          path.resolve(tempLocation, item.from),
-          path.resolve(tempLocation, item.to)
-        );
-      });
+      const copyDir = path.resolve(tempLocation, "multipage/copy");
+      fse.copySync(copyDir, tempLocation);
       // move files into src/pages/index directory
       [`index.${jsExt}`, `index.${styleExt}`, "../index.html"].forEach(file => {
         fse.moveSync(
