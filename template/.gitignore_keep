@@ -80,3 +80,6 @@ typings/
 
 # vs
 .vs*
+
+# output
+dist
