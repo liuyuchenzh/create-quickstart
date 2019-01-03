@@ -1,5 +1,13 @@
 # y-cli changelog
 
+## 1.3.2
+
+- Fix
+  - Add `dist` to `.gitignore`
+
+- Refactor
+  - Move multi-page related files into its own `copy` directory.
+
 ## 1.3.1
 
 - Fix
