@@ -23,19 +23,10 @@ const prod = {
     }),
     ...cdnPlugins
   ],
-  mode: usingCdn ? "none" : "production"
+  mode: "production",
+  optimization: {
+    minimize: !usingCdn
+  }
 };
 
-const optimize = usingCdn
-  ? {
-      optimization: {
-        concatenateModules: true,
-        splitChunks: {
-          chunks: "all"
-        },
-        occurrenceOrder: true
-      }
-    }
-  : {};
-
-module.exports = merge(common, prod, optimize);
+module.exports = merge(common, prod);
