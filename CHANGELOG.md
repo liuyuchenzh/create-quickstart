@@ -1,5 +1,10 @@
 # y-cli changelog
 
+## 1.3.3
+
+- Chore
+  - update `webpack-upload-plugin` to `0.18.0`.
+
 ## 1.3.2
 
 - Fix
