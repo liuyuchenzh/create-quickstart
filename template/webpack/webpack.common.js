@@ -3,6 +3,7 @@ const fs = require("fs");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const { getAssetsPath } = require("./util/assetsPath");
 
 // handle multi pages
 // entry and all are mutually exclusive
@@ -118,7 +119,7 @@ module.exports = {
             loader: "url-loader",
             options: {
               limit: 10000,
-              name: "/img/[name].[hash:7].[ext]"
+              name: `${getAssetsPath("/img/")}[name].[hash:7].[ext]`
             }
           }
         ]
@@ -128,7 +129,7 @@ module.exports = {
         loader: "url-loader",
         options: {
           limit: 10000,
-          name: "/media/[name].[hash:7].[ext]"
+          name: `${getAssetsPath("/media/")}[name].[hash:7].[ext]`
         }
       },
       {
@@ -136,7 +137,7 @@ module.exports = {
         loader: "url-loader",
         options: {
           limit: 10000,
-          name: "/fonts/[name].[hash:7].[ext]"
+          name: `${getAssetsPath("/fonts/")}[name].[hash:7].[ext]`
         }
       }
     ]
