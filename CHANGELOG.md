@@ -1,5 +1,10 @@
 # y-cli changelog
 
+## 1.3.4
+
+- Fix
+  - Load local assets with proper path when running `start` script.
+
 ## 1.3.3
 
 - Chore
