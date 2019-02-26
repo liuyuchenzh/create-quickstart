@@ -1,5 +1,10 @@
 # y-cli changelog
 
+## 1.4.0
+
+- Features
+  - support class property and dynamic import out of box.
+
 ## 1.3.4
 
 - Fix
