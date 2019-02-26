@@ -12,7 +12,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.2.0"
   },
   "lint-staged": {
-    "*.js": [
+    "*.{js,jsx}": [
       "eslint --fix",
       "git add"
     ]
