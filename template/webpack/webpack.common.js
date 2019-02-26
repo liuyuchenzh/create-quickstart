@@ -4,12 +4,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { getAssetsPath } = require("./util/assetsPath");
-
-// handle multi pages
-// entry and all are mutually exclusive
-const { multi, entry = "", all } = process.env;
-const isMulti = multi === "true";
-const buildAll = isMulti && all === "true";
+const { isMulti, entry, buildAll } = require("./config");
 
 // output setup
 const { dist } = require("../build/path");
