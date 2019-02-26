@@ -1,5 +1,10 @@
 # y-cli changelog
 
+## 1.4.1
+
+- Features
+  - open specified page when running `start` script under multi-page mode.
+
 ## 1.4.0
 
 - Features
