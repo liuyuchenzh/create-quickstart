@@ -1,10 +1,10 @@
-# y-cli
+# create-quickstart
 
 A cli for front end project.
 
 ## Intro
 
-Design for simple project.
+Create quickstart project.
 
 ## Features
 
@@ -23,20 +23,14 @@ When choosing Vanilla, following css pre-processors are supported
 - Sass
 - Stylus
 
-## Installation
+## Installation & Usage
+
+Just one line.
 
 ```bash
-$ npm i -g y-cli
+npm init quickstart
 # or
-$ yarn global add y-cli
-```
-
-## Usage
-
-In your shell, run
-
-```bash
-$ y-cli
+yarn create quickstart
 ```
 
 That's it
