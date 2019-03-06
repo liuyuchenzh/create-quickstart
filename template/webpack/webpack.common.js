@@ -137,10 +137,5 @@ module.exports = {
       }
     ]
   },
-  plugins: [
-    new CleanWebpackPlugin(["dist"], {
-      root: path.resolve(__dirname, "..")
-    }),
-    ...htmlPlugins
-  ]
+  plugins: [new CleanWebpackPlugin(), ...htmlPlugins]
 };
