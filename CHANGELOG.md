@@ -1,4 +1,9 @@
-# y-cli changelog
+# changelog
+
+## 1.5.0
+
+- Refactor
+  - Rename project's name to `create-quickstart`.
 
 ## 1.4.1
 
