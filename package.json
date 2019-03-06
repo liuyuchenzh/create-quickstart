@@ -1,6 +1,6 @@
 {
   "name": "create-quickstart",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "create quickstart project",
   "main": "index.js",
   "bin": {
