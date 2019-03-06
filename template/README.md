@@ -1,4 +1,4 @@
-# y-cli
+# create-quickstart
 
 ## development
 
