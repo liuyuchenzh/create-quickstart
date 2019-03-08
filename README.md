@@ -1,5 +1,7 @@
 # create-quickstart
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/liuyuchenzh/y-cli.svg)](https://greenkeeper.io/)
+
 A cli for front end project.
 
 ## Intro
