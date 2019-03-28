@@ -16,6 +16,9 @@ const pageConfig =
 
 const dev = {
   mode: "development",
+  output: {
+    filename: "[name].js"
+  },
   devtool: "inline-source-map",
   devServer: Object.assign(
     {},
