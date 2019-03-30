@@ -1,9 +1,10 @@
 const merge = require("webpack-merge");
 const webpack = require("webpack");
 const common = require("./webpack.common");
-const cdnPlugins = require("./plugins/cdn");
+const { usingCdn, usingSW } = require("./cli-config.json");
+const cdnPlugins = usingCdn ? require("./plugins/cdn"): [];
+const workboxPlugins = usingSW ? require("./plugins/workbox"): [];
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const usingCdn = cdnPlugins.length > 0;
 
 const prod = {
   output: {
@@ -21,7 +22,8 @@ const prod = {
       filename: "[name].[contenthash:7].css",
       chunkFilename: "[id].[contenthash:7].css"
     }),
-    ...cdnPlugins
+    ...cdnPlugins,
+    ...workboxPlugins
   ],
   mode: "production",
   optimization: {

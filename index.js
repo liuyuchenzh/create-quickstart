@@ -7,7 +7,7 @@ const execute = require("./utils/execute");
 const install = require("./utils/install");
 const { write, read } = require("./utils/io");
 let packageJson = require("./template/package.json");
-
+let cliConfigJson = require("./template/webpack/cli-config.json");
 const renameExt = (targetExt, newExt) => location => {
   const reg = new RegExp(`${targetExt}$`);
   fs.renameSync(location, location.replace(reg, newExt));
@@ -39,7 +39,7 @@ const STYLE_EXT = {
 
 const usingVanilla = ({ framework }) => framework === "vanilla";
 const usingCdn = ({ cdn }) => cdn;
-
+const usingVanillaAndNoCdn = ({framework, cdn}) => framework === "vanilla" && !cdn
 const questions = [
   {
     name: "directory",
@@ -131,6 +131,13 @@ const questions = [
     when: usingCdn
   },
   {
+    name: "sw",
+    message: "Use service worker?",
+    type: "confirm",
+    default: false,
+    when: usingVanillaAndNoCdn
+  },
+  {
     name: "installer",
     message: "Use npm or yarn?",
     choices: ["npm", "yarn"],
@@ -144,7 +151,69 @@ const questions = [
     when: usingVanilla
   }
 ];
+function initCDN(usingCdn, cdnProvider) {
+  if (!usingCdn) return;
+  cliConfigJson.usingCdn = true;
 
+  const cdnPackageJson = require("./template/webpack/plugins/package.json");
+  if (!cdnPackageJson.devDependencies) {
+    cdnPackageJson.devDependencies = {};
+  }
+  // add cdn provider to package.json
+  cdnPackageJson.devDependencies['webpack-upload-plugin'] = "latest"
+  cdnPackageJson.devDependencies[cdnProvider] = "latest";
+  const pluginJson = require("./template/webpack/plugins/plugins.json");
+  // update plugin json
+  pluginJson.plugins = pluginJson.plugins.map(item => {
+    if (item.key === "cdn") {
+      return Object.assign(item, {
+        name: cdnProvider,
+        version: "latest"
+      });
+    }
+    return item;
+  });
+  // write plugin json
+  write(
+    resolve("temp/webpack/plugins/plugins.json"),
+    formatJSON(pluginJson)
+  );
+  // update project package.json
+  merge(packageJson, cdnPackageJson);
+}
+function initServiceWorker(usingSW) {
+  if (!usingSW) return;
+  
+  const pluginPackageJson = require("./template/webpack/plugins/package.json");
+  if (!pluginPackageJson.devDependencies) {
+    pluginPackageJson.devDependencies = {};
+  }
+  pluginPackageJson.devDependencies['workbox-webpack-plugin'] = "latest";
+  // inject workbox plugin to package.json's devDependencies
+  merge(packageJson, pluginPackageJson);
+
+  // inject usingSW to cli-config
+  cliConfigJson.usingSW = true;
+
+  // inject serviceWorker's init method.
+  const swFragment = `
+console.warn("Service worker enabled. Check it under production environment.");
+if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("sw.js")
+      .then(registration => {
+        console.log("SW registered: ", registration);
+      })
+      .catch(registrationError => {
+        console.warn("SW registration failed: ", registrationError);
+      });
+  });
+}
+`;
+  const indexJsLocation = resolve("temp/src/index.js");
+  fs.appendFileSync(indexJsLocation, swFragment,'utf-8');
+}
 // if use official cli
 // install cli and execute
 // else cd to directory
@@ -159,6 +228,7 @@ function init() {
       multi,
       cdn,
       cdnProvider,
+      sw,
       installer,
       registry
     } = answer;
@@ -242,33 +312,9 @@ function init() {
     // merge css package.json
     merge(packageJson, require(`./template/cssconfig/package.${css}.json`));
     // using cdn service
-    if (cdn) {
-      const cdnPackageJson = require("./template/webpack/plugins/package.json");
-      if (!cdnPackageJson.devDependencies) {
-        cdnPackageJson.devDependencies = {};
-      }
-      // add cdn provider to package.json
-      cdnPackageJson.devDependencies[cdnProvider] = "latest";
-      const pluginJson = require("./template/webpack/plugins/plugins.json");
-      // update plugin json
-      pluginJson.plugins = pluginJson.plugins.map(item => {
-        if (item.key === "cdn") {
-          return Object.assign(item, {
-            name: cdnProvider,
-            version: "latest"
-          });
-        }
-        return item;
-      });
-      // write plugin json
-      write(
-        resolve("temp/webpack/plugins/plugins.json"),
-        formatJSON(pluginJson)
-      );
-      // update project package.json
-      merge(packageJson, cdnPackageJson);
-    }
-
+    initCDN(cdn, cdnProvider);
+    // using service worker
+    initServiceWorker(sw);
     // only update .js -> .ts here since css reference may needs to be updated too
     if (typescript) {
       renameExt("js", "ts")(indexJsLocation);
@@ -297,6 +343,8 @@ function init() {
     }
     // update package.json
     write(resolve("temp/package.json"), formatJSON(packageJson));
+    // update cli-config.json
+    write(resolve("temp/webpack/cli-config.json"), formatJSON(cliConfigJson));
 
     // create .npmrc
     if (registry && registry.trim()) {
