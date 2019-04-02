@@ -14,14 +14,15 @@
     "url": "https://github.com/liuyuchenzh/y-cli/issues"
   },
   "scripts": {
-    "create-quickstart": "node ./bin/create-quickstart"
+    "create-quickstart": "node ./bin/create-quickstart",
+    "format": "pretty-quick"
   },
   "engines": {
     "node": ">=8.11.0"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "pretty-quick --staged && lint-staged"
     }
   },
   "lint-staged": {
@@ -45,9 +46,10 @@
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
-    "eslint": "^5.15.1",
+    "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-prettier": "^3.0.1",
-    "prettier": "^1.16.4"
+    "prettier": "^1.16.4",
+    "pretty-quick": "^1.10.0"
   }
 }
