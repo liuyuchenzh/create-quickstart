@@ -8,10 +8,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/liuyuchenzh/y-cli.git"
+    "url": "git+https://github.com/liuyuchenzh/create-quickstart.git"
   },
   "bugs": {
-    "url": "https://github.com/liuyuchenzh/y-cli/issues"
+    "url": "https://github.com/liuyuchenzh/create-quickstart/issues"
   },
   "scripts": {
     "create-quickstart": "node ./bin/create-quickstart",
@@ -33,7 +33,7 @@
     ]
   },
   "keywords": [
-    "y-cli"
+    "create-quickstart"
   ],
   "author": "Yuchen Liu",
   "license": "MIT",
