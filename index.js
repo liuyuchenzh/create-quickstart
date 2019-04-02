@@ -39,7 +39,8 @@ const STYLE_EXT = {
 
 const usingVanilla = ({ framework }) => framework === "vanilla";
 const usingCdn = ({ cdn }) => cdn;
-const usingVanillaAndNoCdn = ({framework, cdn}) => framework === "vanilla" && !cdn
+const usingVanillaAndNoCdn = ({ framework, cdn }) =>
+  framework === "vanilla" && !cdn;
 const questions = [
   {
     name: "directory",
@@ -160,7 +161,7 @@ function initCDN(usingCdn, cdnProvider) {
     cdnPackageJson.devDependencies = {};
   }
   // add cdn provider to package.json
-  cdnPackageJson.devDependencies['webpack-upload-plugin'] = "latest"
+  cdnPackageJson.devDependencies["webpack-upload-plugin"] = "latest";
   cdnPackageJson.devDependencies[cdnProvider] = "latest";
   const pluginJson = require("./template/webpack/plugins/plugins.json");
   // update plugin json
@@ -174,21 +175,18 @@ function initCDN(usingCdn, cdnProvider) {
     return item;
   });
   // write plugin json
-  write(
-    resolve("temp/webpack/plugins/plugins.json"),
-    formatJSON(pluginJson)
-  );
+  write(resolve("temp/webpack/plugins/plugins.json"), formatJSON(pluginJson));
   // update project package.json
   merge(packageJson, cdnPackageJson);
 }
 function initServiceWorker(usingSW) {
   if (!usingSW) return;
-  
+
   const pluginPackageJson = require("./template/webpack/plugins/package.json");
   if (!pluginPackageJson.devDependencies) {
     pluginPackageJson.devDependencies = {};
   }
-  pluginPackageJson.devDependencies['workbox-webpack-plugin'] = "latest";
+  pluginPackageJson.devDependencies["workbox-webpack-plugin"] = "latest";
   // inject workbox plugin to package.json's devDependencies
   merge(packageJson, pluginPackageJson);
 
@@ -212,7 +210,7 @@ if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
 }
 `;
   const indexJsLocation = resolve("temp/src/index.js");
-  fs.appendFileSync(indexJsLocation, swFragment,'utf-8');
+  fs.appendFileSync(indexJsLocation, swFragment, "utf-8");
 }
 // if use official cli
 // install cli and execute
