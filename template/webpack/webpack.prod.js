@@ -2,8 +2,8 @@ const merge = require("webpack-merge");
 const webpack = require("webpack");
 const common = require("./webpack.common");
 const { usingCdn, usingSW } = require("./cli-config.json");
-const cdnPlugins = usingCdn ? require("./plugins/cdn"): [];
-const workboxPlugins = usingSW ? require("./plugins/workbox"): [];
+const cdnPlugins = usingCdn ? require("./plugins/cdn") : [];
+const workboxPlugins = usingSW ? require("./plugins/workbox") : [];
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const prod = {
