@@ -341,6 +341,8 @@ function init() {
     }
     // update package.json
     write(resolve("temp/package.json"), formatJSON(packageJson));
+    // save installer info into packageManager
+    cliConfigJson.packageManager = installer;
     // update cli-config.json
     write(resolve("temp/webpack/cli-config.json"), formatJSON(cliConfigJson));
 
