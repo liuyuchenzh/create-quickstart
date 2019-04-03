@@ -379,10 +379,11 @@ function init() {
     const method = "install";
     console.log("installing...");
     execute(installer, [method]);
+    const runCommand = installer === "yarn" ? "yarn" : "npm run";
     console.log("all done");
     console.log("please enter following command:");
     console.log(`- cd ${directory}`);
-    console.log(`- npm run start${multi ? ":all" : ""}`);
+    console.log(`- ${runCommand} start${multi ? ":all" : ""}`);
   });
 }
 
