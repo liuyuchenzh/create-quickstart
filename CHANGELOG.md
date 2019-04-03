@@ -1,5 +1,10 @@
 # changelog
 
+## 1.6.0
+
+- Features
+  - Add an option to enable PWA when choosing Vanilla (`Use service worker?`).
+
 ## 1.5.0
 
 - Refactor
