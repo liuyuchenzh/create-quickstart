@@ -17,7 +17,9 @@ const pageConfig =
 const dev = {
   mode: "development",
   output: {
-    filename: "[name].js"
+    filename: "[name].js",
+    // publicPath helps with history-api-based router
+    publicPath: "/"
   },
   devtool: "inline-source-map",
   devServer: Object.assign(
