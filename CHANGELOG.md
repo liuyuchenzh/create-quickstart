@@ -1,5 +1,10 @@
 # changelog
 
+## 1.7.0
+
+- Features
+  - Use `nodemon` to monitor changes of build-related files and restart `webpack-dev-sever` accordingly.
+
 ## 1.6.0
 
 - Features
@@ -33,6 +38,7 @@
 ## 1.3.2
 
 - Fix
+
   - Add `dist` to `.gitignore`
 
 - Refactor
