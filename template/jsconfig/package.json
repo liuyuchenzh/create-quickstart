@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "core-js": "3.4.8"
+    "core-js": "3.5.0"
   },
   "devDependencies": {
     "eslint": "6.7.2",
