@@ -38,7 +38,7 @@
   "author": "Yuchen Liu",
   "license": "MIT",
   "dependencies": {
-    "commander": "^4.0.0",
+    "commander": "^5.0.0",
     "fs-extra": "^8.1.0",
     "husky": "^4.0.0",
     "inquirer": "^7.0.0",
