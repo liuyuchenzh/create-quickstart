@@ -39,7 +39,7 @@
   "license": "MIT",
   "dependencies": {
     "commander": "^5.0.0",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "^9.0.0",
     "husky": "^4.0.0",
     "inquirer": "^7.0.0",
     "lint-staged": "^10.0.0",
