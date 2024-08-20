@@ -16,7 +16,7 @@
     "webpack-dev-server": "3.10.3",
     "webpack-merge": "4.2.2",
     "prettier": "1.19.1",
-    "core-js": "3.6.4",
+    "core-js": "3.38.1",
     "husky": "4.2.3",
     "lint-staged": "10.0.8",
     "cross-env": "7.0.2",
